@@ -14,7 +14,7 @@ phases:
     commands:
       - echo "Starting pre-build phase..."
       - cd $APP_DIR
-
+      - npm install
   build:
     commands:
       - echo "Building the app..."
