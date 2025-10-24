@@ -23,6 +23,16 @@ resource "aws_iam_role_policy_attachment" "name" {
     policy_arn = "arn:aws:iam::aws:policy/AWSCodeBuildDeveloperAccess"
 }
 
+resource "aws_iam_role_policy_attachment" "codebuild_logs" {
+  role       = aws_iam_role.codebuild_role.name
+  policy_arn = "arn:aws:iam::aws:policy/CloudWatchLogsFullAccess"
+}
+
+resource "aws_iam_role_policy_attachment" "codebuild_s3" {
+  role       = aws_iam_role.codebuild_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonS3FullAccess"
+}
+
 resource "aws_codebuild_project" "build" {
     name = "finvalut-build"
 
@@ -42,6 +52,5 @@ resource "aws_codebuild_project" "build" {
     source {
         type = "GITHUB"
         location = "https://github.com/omar-khaled-2/finvault.git"
-        buildspec = file("buildspec.yml")
     }
 }

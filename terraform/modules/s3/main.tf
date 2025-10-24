@@ -6,7 +6,3 @@ resource "aws_s3_bucket" "artifacts" {
 }
 
 
-resource "aws_s3_bucket_acl" "artifacts" {
-  bucket = aws_s3_bucket.artifacts.bucket
-  acl    = "private"
-}
