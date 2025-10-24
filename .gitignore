@@ -1,0 +1,80 @@
+# ========================
+# Node / NestJS
+# ========================
+
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-store/
+
+# Build outputs
+dist/
+build/
+.out/
+.next/
+.cache/
+coverage/
+logs/
+*.log
+
+# Env files
+.env
+.env.*.local
+.env.local
+.env.test
+.env.production
+
+# TypeScript cache
+*.tsbuildinfo
+
+# IDEs & OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# ========================
+# Terraform
+# ========================
+
+# Local terraform state
+*.tfstate
+*.tfstate.*
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Terraform lock files
+.terraform.lock.hcl
+
+# Terraform working directory
+.terraform/
+
+# Plan output files
+*.tfplan
+
+# Sensitive variable files
+terraform.tfvars
+terraform.tfvars.json
+*.auto.tfvars
+*.auto.tfvars.json
+
+# ========================
+# Miscellaneous
+# ========================
+
+# Local test data or output
+tmp/
+temp/
+*.local
+*.bak
+
+# Docker
+.docker/
+docker-compose.override.yml

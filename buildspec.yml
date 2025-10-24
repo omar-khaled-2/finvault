@@ -1,0 +1,33 @@
+version: 0.2
+
+env:
+  variables:
+    APP_DIR: "app"
+
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 18
+      python: 3.12
+
+  pre_build:
+    commands:
+      - echo "Starting pre-build phase..."
+      - cd $APP_DIR
+      - npm ci
+
+  build:
+    commands:
+      - echo "Building the app..."
+      - npm run build
+
+      
+  post_build:
+    commands:
+      - echo "Build and deployment completed successfully at `date`"
+
+artifacts:
+  files:
+    - '**/*'
+  base-directory: app/dist
