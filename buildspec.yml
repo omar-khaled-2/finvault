@@ -9,7 +9,6 @@ phases:
   install:
     runtime-versions:
       nodejs: 18
-      python: 3.12
 
   pre_build:
     commands:
@@ -22,7 +21,7 @@ phases:
       - echo "Building the app..."
       - npm run build
 
-      
+
   post_build:
     commands:
       - echo "Build and deployment completed successfully at `date`"
