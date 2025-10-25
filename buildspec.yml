@@ -25,7 +25,8 @@ phases:
     commands:
       - echo "Build and deployment completed successfully at `date`"
 
+
 artifacts:
   files:
-    - '**/*'
-  base-directory: app/dist
+    - appspec.yml 
+    - dist/**/*           

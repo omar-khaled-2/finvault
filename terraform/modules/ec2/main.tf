@@ -150,9 +150,9 @@ resource "aws_iam_role_policy_attachment" "ssm_access" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMReadOnlyAccess"
 }
 
-resource "aws_iam_role_policy_attachment" "s3_read_access" {
+resource "aws_iam_role_policy_attachment" "codedeploy" {
   role       = aws_iam_role.api_instance_role.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess"
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforAWSCodeDeploy"
 }
 
 
