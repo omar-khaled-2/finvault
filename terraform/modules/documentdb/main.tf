@@ -54,3 +54,14 @@ resource "aws_docdb_cluster_instance" "docdb_instance" {
   instance_class     = "db.t3.medium"
 }
 
+
+
+resource "aws_ssm_parameter" "mongo_url" {
+  name        = "/finvault/MONGO_URL"
+  description = "MongoDB connection URL"
+  type        = "SecureString"
+  value       = "mongodb://${aws_docdb_cluster.docdb_cluster.master_username}:${aws_docdb_cluster.docdb_cluster.master_password}@${aws_docdb_cluster.docdb_cluster.endpoint}/?replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false&authMechanism=SCRAM-SHA-1"
+  overwrite   = true
+}
+
+

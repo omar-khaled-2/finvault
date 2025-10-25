@@ -121,12 +121,6 @@ resource "aws_autoscaling_attachment" "asg_lb_attach" {
 }
 
 
-resource "aws_ssm_parameter" "ssm_mongodb_url" {
-  name = var.ssm_mongodb_url_name
-  type  = "String"
-  value = "mongodb://${var.mongo_username}:${var.mongo_password}@${var.mongo_endpoint}:27017/?tryWrites=false"
-}
-
 
 data "aws_iam_policy_document" "api_instance_assume_role_policy" {
   statement {
@@ -159,4 +153,13 @@ resource "aws_iam_role_policy_attachment" "codedeploy" {
 resource "aws_iam_role_policy_attachment" "sns_access" {
   role       = aws_iam_role.api_instance_role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonSNSFullAccess"
+}
+
+
+resource "aws_ssm_parameter" "jwt_secret" {
+  name        = "/finvault/JWT_SECRET"
+  description = "JWT signing secret"
+  type        = "SecureString"
+  value       = var.jwt_secret
+  overwrite   = true
 }
