@@ -30,3 +30,4 @@ artifacts:
   files:
     - appspec.yml         # ✅ include appspec.yml
     - app/dist/**/*           # ✅ include built files
+    - scripts/**/*        # ✅ include deployment scripts
