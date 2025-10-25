@@ -1,1 +1,1 @@
-npm run start:prod
+PWD

@@ -28,8 +28,8 @@ phases:
 
 artifacts:
   files:
-    - appspec.yml         # ✅ include appspec.yml
-    - app/dist/**/*           # ✅ include built files
+    - appspec.yml
+    - app/dist/**/*          
     - app/package.json
     - app/node_modules/**/*
-    - scripts/**/*        # ✅ include deployment scripts
+    - scripts/**/*    
