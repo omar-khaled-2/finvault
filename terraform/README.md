@@ -1,536 +1,755 @@
-# AWS Infrastructure as Code - Scalable Web Application Deployment
+# 🏗️ FinVault Infrastructure - Terraform
+
+<div align="center">
 
 ![Terraform](https://img.shields.io/badge/Terraform-7B42BC?style=for-the-badge&logo=terraform&logoColor=white)
-![AWS](https://img.shields.io/badge/AWS-FF9900?style=for-the-badge&logo=amazon-aws&logoColor=white)
-![Infrastructure as Code](https://img.shields.io/badge/IaC-Infrastructure%20as%20Code-blue?style=for-the-badge)
+![AWS](https://img.shields.io/badge/AWS-232F3E?style=for-the-badge&logo=amazon-aws&logoColor=white)
+![Infrastructure as Code](https://img.shields.io/badge/IaC-100%25-success?style=for-the-badge)
 
-A production-ready, highly available, and auto-scalable infrastructure deployment on AWS using Terraform. This project demonstrates enterprise-level cloud architecture with automated deployment, load balancing, and managed database services.
+**Complete AWS infrastructure automation for a production-ready digital wallet platform**
+
+</div>
+
+---
 
 ## 📋 Table of Contents
 
-- [Overview](#overview)
-- [Architecture](#architecture)
-- [Technologies & Skills](#technologies--skills)
-- [Infrastructure Components](#infrastructure-components)
-- [Project Structure](#project-structure)
-- [Prerequisites](#prerequisites)
-- [Quick Start](#quick-start)
-- [Module Documentation](#module-documentation)
-- [Features](#features)
-- [Best Practices](#best-practices)
-- [Cost Optimization](#cost-optimization)
-- [Security Considerations](#security-considerations)
-- [Monitoring & Maintenance](#monitoring--maintenance)
-- [Future Enhancements](#future-enhancements)
+- [Overview](#-overview)
+- [Architecture](#-architecture)
+- [Resources Provisioned](#-resources-provisioned)
+- [Prerequisites](#-prerequisites)
+- [Quick Start](#-quick-start)
+- [Infrastructure Details](#-infrastructure-details)
+- [Variables](#-variables)
+- [Outputs](#-outputs)
+- [Cost Estimation](#-cost-estimation)
+- [Security](#-security)
+- [Troubleshooting](#-troubleshooting)
+
+---
 
 ## 🎯 Overview
 
-This project provisions a complete, production-grade infrastructure on AWS for hosting a Node.js application with MongoDB backend. It demonstrates expertise in cloud architecture, infrastructure as code, and DevOps best practices.
+This Terraform configuration provisions a **complete, production-ready AWS infrastructure** for the FinVault digital wallet application. The infrastructure is designed with **high availability, security, and scalability** in mind.
 
-The infrastructure includes:
-- **Multi-AZ VPC** with public and private subnets
-- **Auto-scaling EC2 instances** with Application Load Balancer
-- **AWS DocumentDB** (MongoDB-compatible) cluster in private subnets
-- **Automated deployments** with user data scripts
-- **IAM roles and policies** for secure resource access
-- **Parameter Store integration** for secrets management
+### Key Highlights
 
-## 🏗️ Architecture
+✅ **100% Infrastructure as Code** - Every resource is version-controlled and reproducible  
+✅ **Single File Deployment** - Simplified `main.tf` for easy management  
+✅ **Multi-AZ Architecture** - Resources span 2 availability zones for high availability  
+✅ **Auto-Scaling** - Automatically scales from 1 to 4 instances based on load  
+✅ **Secure Networking** - VPC with public/private subnets, NAT Gateway  
+✅ **Managed Database** - AWS DocumentDB for MongoDB compatibility  
+✅ **Complete CI/CD** - Integrated CodePipeline for automated deployments  
+✅ **Secrets Management** - AWS Systems Manager Parameter Store for credentials  
+
+---
+
+## 🏗 Architecture
+
+### High-Level Infrastructure Diagram
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                        AWS Cloud (us-east-1)                     │
-│                                                                   │
-│  ┌────────────────────────────────────────────────────────────┐ │
-│  │                    VPC (10.0.0.0/16)                        │ │
-│  │                                                              │ │
-│  │  ┌─────────────────────────────────────────────────────┐   │ │
-│  │  │              Internet Gateway                        │   │ │
-│  │  └──────────────────┬──────────────────────────────────┘   │ │
-│  │                     │                                        │ │
-│  │  ┌──────────────────▼──────────────────────────────────┐   │ │
-│  │  │        Application Load Balancer (ALB)              │   │ │
-│  │  └──────────────────┬──────────────────────────────────┘   │ │
-│  │                     │                                        │ │
-│  │  ┌──────────────────┴──────────────────────────────────┐   │ │
-│  │  │         Public Subnets (Multi-AZ)                   │   │ │
-│  │  │                                                      │   │ │
-│  │  │  ┌────────────────┐      ┌────────────────┐        │   │ │
-│  │  │  │  EC2 Instance  │      │  EC2 Instance  │        │   │ │
-│  │  │  │  (us-east-1a)  │      │  (us-east-1b)  │        │   │ │
-│  │  │  │  Auto Scaling  │      │  Auto Scaling  │        │   │ │
-│  │  │  └────────┬───────┘      └────────┬───────┘        │   │ │
-│  │  │           │                       │                 │   │ │
-│  │  └───────────┼───────────────────────┼─────────────────┘   │ │
-│  │              │                       │                     │ │
-│  │  ┌───────────▼───────────────────────▼─────────────────┐   │ │
-│  │  │         Private Subnets (Multi-AZ)                  │   │ │
-│  │  │                                                      │   │ │
-│  │  │  ┌────────────────────────────────────────────┐    │   │ │
-│  │  │  │      AWS DocumentDB Cluster                │    │   │ │
-│  │  │  │      (MongoDB Compatible)                  │    │   │ │
-│  │  │  │      - Master: us-east-1a                  │    │   │ │
-│  │  │  │      - Replica: us-east-1b                 │    │   │ │
-│  │  │  └────────────────────────────────────────────┘    │   │ │
-│  │  │                                                      │   │ │
-│  │  └──────────────────────────────────────────────────────┘   │ │
-│  │                                                              │ │
-│  └──────────────────────────────────────────────────────────────┘ │
-│                                                                   │
-│  ┌──────────────────────────────────────────────────────────┐   │
-│  │  Additional AWS Services:                                │   │
-│  │  • IAM Roles & Policies                                  │   │
-│  │  • Systems Manager Parameter Store                       │   │
-│  │  • CloudWatch (Auto-scaling metrics)                     │   │
-│  │  • SNS (Notifications)                                   │   │
-│  └──────────────────────────────────────────────────────────┘   │
-│                                                                   │
-└───────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────┐
+│                              AWS Cloud                                   │
+│  ┌───────────────────────────────────────────────────────────────────┐  │
+│  │                    VPC (10.0.0.0/16)                              │  │
+│  │                                                                   │  │
+│  │  ┌─────────────────────────────────────────────────────────────┐ │  │
+│  │  │                   Public Subnets                            │ │  │
+│  │  │  ┌──────────────┐              ┌──────────────┐            │ │  │
+│  │  │  │ 10.0.0.0/24  │              │ 10.0.1.0/24  │            │ │  │
+│  │  │  │    AZ-1      │              │    AZ-2      │            │ │  │
+│  │  │  └──────┬───────┘              └──────┬───────┘            │ │  │
+│  │  │         │                             │                     │ │  │
+│  │  │    ┌────▼─────────────────────────────▼────┐               │ │  │
+│  │  │    │  Application Load Balancer (ALB)      │               │ │  │
+│  │  │    │  - Health checks                      │               │ │  │
+│  │  │    │  - SSL/TLS termination ready          │               │ │  │
+│  │  │    └────┬─────────────────────────────┬────┘               │ │  │
+│  │  │         │                             │                     │ │  │
+│  │  │    ┌────▼─────┐                  ┌────▼─────┐              │ │  │
+│  │  │    │    NAT   │                  │ Internet │              │ │  │
+│  │  │    │  Gateway │                  │ Gateway  │              │ │  │
+│  │  │    └────┬─────┘                  └──────────┘              │ │  │
+│  │  └─────────┼────────────────────────────────────────────────┘ │  │
+│  │            │                                                    │  │
+│  │  ┌─────────▼──────────────────────────────────────────────────┐ │  │
+│  │  │                   Private Subnets                          │ │  │
+│  │  │  ┌──────────────┐              ┌──────────────┐            │ │  │
+│  │  │  │ 10.0.2.0/24  │              │ 10.0.3.0/24  │            │ │  │
+│  │  │  │    AZ-1      │              │    AZ-2      │            │ │  │
+│  │  │  └──────┬───────┘              └──────┬───────┘            │ │  │
+│  │  │         │                             │                     │ │  │
+│  │  │    ┌────▼─────────────────────────────▼────┐               │ │  │
+│  │  │    │      Auto Scaling Group (1-4)         │               │ │  │
+│  │  │    │  ┌─────────┐ ┌─────────┐ ┌─────────┐ │               │ │  │
+│  │  │    │  │ EC2     │ │ EC2     │ │ EC2     │ │               │ │  │
+│  │  │    │  │ NestJS  │ │ NestJS  │ │ NestJS  │ │               │ │  │
+│  │  │    │  └─────────┘ └─────────┘ └─────────┘ │               │ │  │
+│  │  │    └────┬─────────────────────────────┬────┘               │ │  │
+│  │  │         │                             │                     │ │  │
+│  │  │    ┌────▼─────────────────────────────▼────┐               │ │  │
+│  │  │    │    AWS DocumentDB Cluster             │               │ │  │
+│  │  │    │    (MongoDB-compatible)                │               │ │  │
+│  │  │    │  - Multi-AZ                            │               │ │  │
+│  │  │    │  - Automatic backups                   │               │ │  │
+│  │  │    └────────────────────────────────────────┘               │ │  │
+│  │  └────────────────────────────────────────────────────────────┘ │  │
+│  └───────────────────────────────────────────────────────────────────┘  │
+│                                                                           │
+│  ┌───────────────────────────────────────────────────────────────────┐  │
+│  │                        CI/CD Pipeline                             │  │
+│  │  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐         │  │
+│  │  │ GitHub   │─▶│CodeBuild │─▶│CodeDeploy│─▶│   S3     │         │  │
+│  │  │ Source   │  │          │  │          │  │Artifacts │         │  │
+│  │  └──────────┘  └──────────┘  └──────────┘  └──────────┘         │  │
+│  └───────────────────────────────────────────────────────────────────┘  │
+│                                                                           │
+│  ┌───────────────────────────────────────────────────────────────────┐  │
+│  │                   Supporting Services                             │  │
+│  │  - Systems Manager (SSM) Parameter Store                          │  │
+│  │  - IAM Roles & Policies                                           │  │
+│  │  - CloudWatch Logs & Metrics                                      │  │
+│  │  - SNS for SMS notifications                                      │  │
+│  └───────────────────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────────────────┘
 ```
 
-## 💼 Technologies & Skills
+### Network Flow
 
-### Infrastructure & DevOps
-- **Terraform** - Infrastructure as Code (IaC)
-  - Modular architecture design
-  - Resource dependencies management
-  - State management
-  - Variable interpolation and templating
+```
+Internet → IGW → ALB (Public) → EC2 (Private) → NAT Gateway → Internet
+                                      ↓
+                              DocumentDB (Private)
+```
+
+---
+
+## 📦 Resources Provisioned
+
+### Networking Resources (VPC)
+
+| Resource | Count | Purpose |
+|----------|-------|---------|
+| **VPC** | 1 | Isolated network environment (10.0.0.0/16) |
+| **Internet Gateway** | 1 | Public internet access |
+| **Public Subnets** | 2 | Load balancer and NAT Gateway (AZ redundancy) |
+| **Private Subnets** | 2 | Application and database (secure, isolated) |
+| **NAT Gateway** | 1 | Outbound internet for private resources |
+| **Elastic IP** | 1 | Static IP for NAT Gateway |
+| **Route Tables** | 2 | Public and private routing |
+| **Security Groups** | 2 | EC2 and DocumentDB firewall rules |
+
+### Compute Resources (EC2)
+
+| Resource | Count | Purpose |
+|----------|-------|---------|
+| **Launch Template** | 1 | EC2 instance configuration (t3.medium, user data) |
+| **Auto Scaling Group** | 1 | Manages 1-4 EC2 instances |
+| **Scaling Policy** | 1 | CPU-based target tracking (50% target) |
+| **Application Load Balancer** | 1 | Distributes traffic across instances |
+| **Target Group** | 1 | Health checks and routing |
+| **IAM Role** | 1 | EC2 instance permissions |
+| **Instance Profile** | 1 | Attaches IAM role to instances |
+
+### Database Resources (DocumentDB)
+
+| Resource | Count | Purpose |
+|----------|-------|---------|
+| **DocumentDB Cluster** | 1 | MongoDB-compatible database |
+| **DocumentDB Instance** | 1 | Database compute (db.t3.medium) |
+| **DB Subnet Group** | 1 | Multi-AZ database placement |
+| **Parameter Group** | 1 | Database configuration (TLS disabled) |
+| **Security Group** | 1 | Database firewall (port 27017) |
+
+### Storage Resources (S3)
+
+| Resource | Count | Purpose |
+|----------|-------|---------|
+| **S3 Bucket** | 1 | CodePipeline artifact storage |
+
+### CI/CD Resources (CodePipeline)
+
+| Resource | Count | Purpose |
+|----------|-------|---------|
+| **CodePipeline** | 1 | Orchestrates Source → Build → Deploy |
+| **CodeBuild Project** | 1 | Builds application artifacts |
+| **CodeDeploy Application** | 1 | Manages deployments |
+| **CodeDeploy Deployment Group** | 1 | Targets Auto Scaling Group |
+| **IAM Roles** | 3 | CodePipeline, CodeBuild, CodeDeploy |
+
+### Secrets & Configuration
+
+| Resource | Count | Purpose |
+|----------|-------|---------|
+| **SSM Parameters** | 2 | JWT_SECRET, MONGO_URL (encrypted) |
+| **Random String** | 1 | Generates JWT secret |
+
+---
+
+## 🚀 Prerequisites
+
+### Required Tools
+
+- **Terraform** (v1.0 or later)
+  ```bash
+  # Install on macOS
+  brew install terraform
   
-- **AWS Cloud Services**
-  - VPC networking and subnetting
-  - EC2 Auto Scaling Groups
-  - Application Load Balancer (ALB)
-  - Launch Templates
-  - Internet Gateway and Route Tables
-  - Security Groups and Network ACLs
+  # Install on Linux
+  wget https://releases.hashicorp.com/terraform/1.6.0/terraform_1.6.0_linux_amd64.zip
+  unzip terraform_1.6.0_linux_amd64.zip
+  sudo mv terraform /usr/local/bin/
+  ```
 
-### Database & Data Management
-- **AWS DocumentDB** - Managed MongoDB-compatible database
-  - Cluster configuration
-  - Multi-AZ deployment
-  - Subnet groups
-  - Parameter groups and TLS configuration
+- **AWS CLI** (configured with credentials)
+  ```bash
+  # Install
+  curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+  unzip awscliv2.zip
+  sudo ./aws/install
   
-### Security & Identity Management
-- **IAM (Identity and Access Management)**
-  - IAM Roles and Instance Profiles
-  - Policy documents
-  - Service-to-service authentication
-  - Least privilege access principles
+  # Configure
+  aws configure
+  ```
 
-- **AWS Systems Manager**
-  - Parameter Store for secrets management
-  - Secure credential storage
+### AWS Requirements
 
-### Compute & Automation
-- **Linux/Bash Scripting**
-  - User data automation
-  - Application bootstrapping
-  - Environment configuration
+- **AWS Account** with admin or sufficient permissions
+- **IAM Permissions** for:
+  - VPC, EC2, AutoScaling, ELB
+  - DocumentDB, S3
+  - CodePipeline, CodeBuild, CodeDeploy
+  - IAM roles and policies
+  - Systems Manager Parameter Store
 
-- **Auto Scaling & High Availability**
-  - Target tracking scaling policies
-  - CPU-based auto-scaling
-  - Health checks configuration
-  - Multi-AZ deployment strategies
+- **GitHub Connection**:
+  - CodeStar Connection to your GitHub repository
+  - Update `github_connection_arn` in `main.tf`
 
-### Networking
-- **VPC Design**
-  - CIDR block planning
-  - Public/Private subnet architecture
-  - Route table configuration
-  - Internet Gateway setup
-  - Cross-AZ redundancy
+---
 
-### Application Deployment
-- **Node.js & PM2**
-  - Production deployment
-  - Process management
-  - Environment variable configuration
+## 🏁 Quick Start
 
-- **Git Integration**
-  - Automated application deployment from repository
-  - CI/CD pipeline readiness
+### Step 1: Clone Repository
 
-### Load Balancing
-- **Application Load Balancer (ALB)**
-  - Target groups configuration
-  - Health check endpoints
-  - HTTP/HTTPS routing
-  - Auto-scaling group integration
-
-## 🏛️ Infrastructure Components
-
-### 1. VPC Module (`modules/vpc/`)
-Creates a complete Virtual Private Cloud with:
-- **VPC**: Custom CIDR block (10.0.0.0/16)
-- **Internet Gateway**: For public internet access
-- **Public Subnets**: 2 subnets across different AZs (10.0.1.0/24, 10.0.3.0/24)
-- **Private Subnets**: 2 subnets for database tier (10.0.2.0/24, 10.0.4.0/24)
-- **Route Tables**: Public routing to Internet Gateway
-- **Multi-AZ**: High availability across us-east-1a and us-east-1b
-
-### 2. EC2 Module (`modules/ec2/`)
-Provisions scalable compute resources:
-- **Launch Template**: AMI configuration and instance settings
-- **Auto Scaling Group**: 
-  - Min: 1 instance
-  - Desired: 2 instances
-  - Max: 4 instances
-- **Scaling Policy**: CPU target tracking (50% threshold)
-- **Security Group**: HTTP (80) and SSH (22) access
-- **Application Load Balancer**: Traffic distribution
-- **Target Group**: Health check monitoring
-- **IAM Role**: EC2 instance permissions
-- **User Data Script**: Automated application deployment
-- **SSM Parameter**: Secure database URL storage
-
-### 3. DocumentDB Module (`modules/documentdb/`)
-Managed MongoDB-compatible database:
-- **DocumentDB Cluster**: Primary database cluster
-- **Cluster Instance**: db.t3.medium instance
-- **Subnet Group**: Private subnet placement
-- **Security Group**: Port 27017 access control
-- **Parameter Group**: TLS configuration
-- **Multi-AZ**: High availability setup
-
-## 📁 Project Structure
-
-```
-.
-├── envs/
-│   └── dev/
-│       ├── main.tf              # Root module - orchestrates all resources
-│       ├── providers.tf         # AWS provider configuration
-│       ├── variables.tf         # Environment-specific variables
-│       └── .terraform/          # Terraform state and providers
-│
-└── modules/
-    ├── vpc/
-    │   ├── main.tf              # VPC, subnets, IGW, route tables
-    │   └── outputs.tf           # Exports VPC and subnet IDs
-    │
-    ├── ec2/
-    │   ├── main.tf              # EC2, ASG, ALB, security groups, IAM
-    │   ├── variables.tf         # Module input variables
-    │   └── user_data.sh         # Bootstrap script for EC2 instances
-    │
-    └── documentdb/
-        ├── main.tf              # DocumentDB cluster and configuration
-        ├── variables.tf         # Database module variables
-        └── outputs.tf           # Database connection details
-```
-
-## 🔧 Prerequisites
-
-- **Terraform**: v1.0+ ([Download](https://www.terraform.io/downloads))
-- **AWS CLI**: Configured with appropriate credentials ([Setup Guide](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html))
-- **AWS Account**: With permissions to create VPC, EC2, DocumentDB, IAM resources
-- **Git**: For application deployment via user data script
-
-## 🚀 Quick Start
-
-### 1. Clone the Repository
 ```bash
-git clone <your-repository-url>
-cd <project-directory>
+git clone https://github.com/omar-khaled-2/finvault.git
+cd finvault/terraform
 ```
 
-### 2. Configure AWS Credentials
-```bash
-aws configure
-# Enter your AWS Access Key ID
-# Enter your AWS Secret Access Key
-# Default region: us-east-1
+### Step 2: Configure Variables (Optional)
+
+Edit `main.tf` to customize:
+
+```hcl
+variable "aws_region" {
+  default = "us-east-1"  # Change region if needed
+}
+
+variable "github_connection_arn" {
+  default = "arn:aws:codeconnections:us-east-1:..."  # Update with your ARN
+}
+
+variable "documentdb_username" {
+  default = "admin"  # Change if needed
+}
+
+variable "documentdb_password" {
+  default = "SecurePassword123!"  # CHANGE THIS!
+}
 ```
 
-### 3. Initialize Terraform
+### Step 3: Initialize Terraform
+
 ```bash
-cd envs/dev
 terraform init
 ```
 
-### 4. Review Infrastructure Plan
-```bash
-terraform plan
+**Expected output:**
+```
+Initializing the backend...
+Initializing provider plugins...
+Terraform has been successfully initialized!
 ```
 
-### 5. Deploy Infrastructure
-```bash
-terraform apply
-```
-Type `yes` when prompted to confirm.
+### Step 4: Plan Infrastructure
 
-### 6. Get Application Load Balancer URL
+```bash
+terraform plan -out=tfplan
+```
+
+This will show all resources to be created. Review carefully!
+
+### Step 5: Apply Infrastructure
+
+```bash
+terraform apply tfplan
+```
+
+**Deployment time:** ~15-20 minutes
+
+**What's happening:**
+- ✅ VPC and networking setup (2 min)
+- ✅ DocumentDB cluster creation (10-12 min)
+- ✅ EC2 Auto Scaling Group (2-3 min)
+- ✅ Load Balancer and Target Groups (1-2 min)
+- ✅ CI/CD pipeline setup (1 min)
+
+### Step 6: Get Outputs
+
 ```bash
 terraform output
-# Or specifically:
-aws elbv2 describe-load-balancers --query 'LoadBalancers[*].DNSName' --output text
 ```
 
-### 7. Destroy Infrastructure (when done)
+**Expected outputs:**
+```
+load_balancer_dns = "web-lb-1234567890.us-east-1.elb.amazonaws.com"
+vpc_id = "vpc-0123456789abcdef0"
+documentdb_endpoint = "docdb-cluster.cluster-xyz.us-east-1.docdb.amazonaws.com"
+```
+
+### Step 7: Test Deployment
+
 ```bash
+# Get the load balancer DNS
+ALB_DNS=$(terraform output -raw load_balancer_dns)
+
+# Wait for instances to be healthy (~5 minutes)
+# Then test the health endpoint
+curl http://$ALB_DNS/health
+```
+
+---
+
+## 🔧 Infrastructure Details
+
+### VPC Configuration
+
+```hcl
+CIDR Block: 10.0.0.0/16
+Public Subnets:
+  - 10.0.0.0/24 (us-east-1a)
+  - 10.0.1.0/24 (us-east-1b)
+Private Subnets:
+  - 10.0.2.0/24 (us-east-1a)
+  - 10.0.3.0/24 (us-east-1b)
+```
+
+### Auto Scaling Configuration
+
+```hcl
+Desired Capacity: 2 instances
+Minimum: 1 instance
+Maximum: 4 instances
+Instance Type: t3.medium
+Scaling Metric: CPU Utilization (target 50%)
+Health Check: ALB health check (/health endpoint)
+```
+
+### Load Balancer Configuration
+
+```hcl
+Type: Application Load Balancer
+Scheme: Internet-facing
+Subnets: Public subnets (2 AZs)
+Health Check Path: /health
+Health Check Interval: 30 seconds
+Healthy Threshold: 2
+Unhealthy Threshold: 3
+```
+
+### DocumentDB Configuration
+
+```hcl
+Engine: docdb
+Instance Class: db.t3.medium
+Multi-AZ: Yes (via subnet group)
+TLS: Disabled (for development)
+Backup Retention: 1 day (default)
+```
+
+### Security Groups
+
+**EC2 Security Group:**
+- Inbound: Port 80 (HTTP) from 0.0.0.0/0
+- Outbound: All traffic
+
+**DocumentDB Security Group:**
+- Inbound: Port 27017 from 0.0.0.0/0 (restrict to EC2 SG in production)
+- Outbound: All traffic
+
+---
+
+## 🔧 Variables
+
+| Variable | Type | Default | Description |
+|----------|------|---------|-------------|
+| `aws_region` | string | `us-east-1` | AWS region for resource deployment |
+| `github_connection_arn` | string | (ARN) | CodeStar connection ARN for GitHub |
+| `documentdb_username` | string | `omar` | DocumentDB master username |
+| `documentdb_password` | string | `12345678` | DocumentDB master password |
+
+### Customizing Variables
+
+Create a `terraform.tfvars` file:
+
+```hcl
+aws_region             = "us-west-2"
+documentdb_username    = "admin"
+documentdb_password    = "SuperSecurePassword123!"
+github_connection_arn  = "arn:aws:codeconnections:us-west-2:123456789:connection/abc"
+```
+
+Then apply:
+
+```bash
+terraform apply -var-file="terraform.tfvars"
+```
+
+---
+
+## 📤 Outputs
+
+After deployment, Terraform provides the following outputs:
+
+| Output | Description | Usage |
+|--------|-------------|-------|
+| `vpc_id` | VPC identifier | Networking reference |
+| `public_subnet_ids` | List of public subnet IDs | Load balancer placement |
+| `private_subnet_ids` | List of private subnet IDs | App/DB placement |
+| `load_balancer_dns` | ALB DNS name | **Access your application** |
+| `documentdb_endpoint` | DocumentDB cluster endpoint | Database connection |
+| `documentdb_username` | DB master username | (Sensitive) |
+| `documentdb_password` | DB master password | (Sensitive) |
+| `artifacts_bucket_name` | S3 bucket name | Pipeline artifacts |
+| `autoscaling_group_name` | ASG name | Deployment target |
+| `codepipeline_name` | Pipeline name | CI/CD monitoring |
+
+### Accessing Outputs
+
+```bash
+# Get all outputs
+terraform output
+
+# Get specific output
+terraform output load_balancer_dns
+
+# Get raw output (no quotes)
+terraform output -raw load_balancer_dns
+
+# Get sensitive outputs
+terraform output documentdb_password
+```
+
+---
+
+## 💰 Cost Estimation
+
+### Monthly Cost Breakdown (us-east-1)
+
+| Service | Configuration | Est. Monthly Cost |
+|---------|--------------|-------------------|
+| **EC2 Instances** | 2x t3.medium (on-demand) | ~$60 |
+| **Application Load Balancer** | 1 ALB + data processing | ~$25 |
+| **NAT Gateway** | 1 NAT + data transfer | ~$35 |
+| **DocumentDB** | 1x db.t3.medium | ~$100 |
+| **S3** | Artifact storage (<1GB) | ~$1 |
+| **CodePipeline** | 1 active pipeline | $1 |
+| **Data Transfer** | Outbound data | ~$10 |
+| **CloudWatch** | Logs and metrics | ~$5 |
+
+**Total Estimated Cost: ~$237/month**
+
+### Cost Optimization Tips
+
+💡 **Development Environment:**
+- Use t3.micro instances: $15/month savings
+- Use 1 instance (no ASG): $30/month savings
+- DocumentDB db.t3.small: $50/month savings
+
+💡 **Reserved Instances:**
+- 1-year Reserved Instances: ~30% savings
+- 3-year Reserved Instances: ~50% savings
+
+💡 **Spot Instances:**
+- Use Spot for non-prod: up to 90% savings
+
+💡 **Shut down when not in use:**
+```bash
+# Stop instances at night
+terraform destroy -target=aws_autoscaling_group.autoscaling_group
+```
+
+---
+
+## 🔒 Security
+
+### Best Practices Implemented
+
+✅ **Network Segmentation**
+- Public subnets for internet-facing resources
+- Private subnets for application and database
+- NAT Gateway for secure outbound access
+
+✅ **Security Groups**
+- Principle of least privilege
+- Port-specific rules (80, 27017)
+- No SSH access (use SSM Session Manager)
+
+✅ **Secrets Management**
+- SSM Parameter Store for sensitive data
+- Encrypted SecureString parameters
+- No hardcoded credentials
+
+✅ **IAM Roles**
+- Service-specific IAM roles
+- Instance profiles for EC2
+- Least privilege policies
+
+✅ **Database Security**
+- No public accessibility
+- Private subnet placement
+- Security group restrictions
+
+### Security Improvements for Production
+
+🔐 **Enable TLS on DocumentDB:**
+```hcl
+parameter {
+  name  = "tls"
+  value = "enabled"
+}
+```
+
+🔐 **Restrict Security Groups:**
+```hcl
+# EC2 SG: Allow only from ALB
+cidr_blocks = [aws_vpc.main.cidr_block]
+
+# DocumentDB SG: Allow only from EC2 SG
+security_groups = [aws_security_group.ec2_sg.id]
+```
+
+🔐 **Enable VPC Flow Logs:**
+```hcl
+resource "aws_flow_log" "main" {
+  vpc_id = aws_vpc.main.id
+  # ... additional configuration
+}
+```
+
+🔐 **Add AWS WAF:**
+```hcl
+resource "aws_wafv2_web_acl" "main" {
+  # ... WAF rules
+}
+```
+
+---
+
+## 🐛 Troubleshooting
+
+### Common Issues
+
+#### Issue: Terraform Init Fails
+
+```bash
+Error: Failed to query available provider packages
+```
+
+**Solution:**
+```bash
+# Clear Terraform cache
+rm -rf .terraform .terraform.lock.hcl
+
+# Re-initialize
+terraform init
+```
+
+#### Issue: AWS Credentials Error
+
+```bash
+Error: error configuring Terraform AWS Provider
+```
+
+**Solution:**
+```bash
+# Verify AWS credentials
+aws sts get-caller-identity
+
+# Reconfigure if needed
+aws configure
+```
+
+#### Issue: GitHub Connection Not Found
+
+```bash
+Error: CodeStar Connection not found
+```
+
+**Solution:**
+1. Create CodeStar Connection in AWS Console
+2. Authenticate with GitHub
+3. Update `github_connection_arn` in `main.tf`
+
+#### Issue: DocumentDB Takes Too Long
+
+DocumentDB cluster creation takes 10-15 minutes. This is normal.
+
+```bash
+# Monitor progress
+aws docdb describe-db-clusters --db-cluster-identifier <cluster-id>
+```
+
+#### Issue: Health Checks Failing
+
+```bash
+# Check EC2 instance logs
+aws logs tail /aws/ec2/user-data --follow
+
+# Check ALB target health
+aws elbv2 describe-target-health \
+  --target-group-arn <target-group-arn>
+```
+
+**Common causes:**
+- Application not started
+- Port 80 not listening
+- Health endpoint not responding
+- Security group misconfiguration
+
+#### Issue: CodeDeploy Failure
+
+```bash
+# View deployment logs
+aws deploy get-deployment --deployment-id <deployment-id>
+
+# Check deployment events
+aws deploy list-deployment-instances --deployment-id <deployment-id>
+```
+
+### Terraform State Issues
+
+#### Corrupted State
+
+```bash
+# Pull current state
+terraform state pull > backup.tfstate
+
+# Manual recovery if needed
+terraform state push backup.tfstate
+```
+
+#### Resource Drift
+
+```bash
+# Detect drift
+terraform plan
+
+# Refresh state
+terraform refresh
+```
+
+### Cleaning Up
+
+#### Destroy All Resources
+
+```bash
+# Preview destruction
+terraform plan -destroy
+
+# Destroy all resources
 terraform destroy
 ```
 
-## 📚 Module Documentation
+⚠️ **Warning:** This will delete:
+- All EC2 instances
+- DocumentDB cluster (data loss!)
+- S3 bucket and artifacts
+- All networking resources
 
-### VPC Module
+#### Destroy Specific Resources
 
-**Purpose**: Creates isolated network infrastructure with public and private subnets.
+```bash
+# Destroy only EC2 instances
+terraform destroy -target=aws_autoscaling_group.autoscaling_group
 
-**Outputs**:
-- `vpc_id`: VPC identifier
-- `public_subnet_ids`: List of public subnet IDs
-- `private_subnet_ids`: List of private subnet IDs
-
-**Resources Created**:
-- 1 VPC
-- 1 Internet Gateway
-- 2 Public Subnets (Multi-AZ)
-- 2 Private Subnets (Multi-AZ)
-- 1 Route Table
-- 2 Route Table Associations
-
-### EC2 Module
-
-**Purpose**: Provisions auto-scaling compute resources with load balancing.
-
-**Inputs**:
-- `vpc_id`: VPC identifier
-- `public_subnet_ids`: List of public subnets
-- `mongo_endpoint`: DocumentDB cluster endpoint
-- `mongo_username`: Database username
-- `mongo_password`: Database password
-
-**Resources Created**:
-- 1 Launch Template
-- 1 Auto Scaling Group
-- 1 Auto Scaling Policy
-- 1 Application Load Balancer
-- 1 Target Group
-- 1 ALB Listener
-- 2 Security Groups
-- 1 IAM Role
-- 1 IAM Instance Profile
-- 1 SSM Parameter
-
-**Application Deployment**:
-The user data script automatically:
-1. Updates the system
-2. Installs Node.js and Git
-3. Installs PM2 for process management
-4. Clones the application from GitHub
-5. Installs dependencies
-6. Configures environment variables
-7. Builds and starts the application
-
-### DocumentDB Module
-
-**Purpose**: Deploys managed MongoDB-compatible database cluster.
-
-**Inputs**:
-- `vpc_id`: VPC identifier
-- `private_subnet_ids`: List of private subnets
-- `username`: Master username (default: "omar")
-- `password`: Master password (default: "12345678")
-
-**Outputs**:
-- `endpoint`: Database cluster endpoint
-- `username`: Master username
-- `password`: Master password
-
-**Resources Created**:
-- 1 DocumentDB Cluster
-- 1 DocumentDB Instance
-- 1 Subnet Group
-- 1 Parameter Group
-- 1 Security Group
-
-## ✨ Features
-
-### High Availability
-- Multi-AZ deployment across 2 availability zones
-- Auto-scaling group maintains desired capacity
-- DocumentDB cluster with automatic failover
-
-### Scalability
-- CPU-based auto-scaling (50% threshold)
-- Can scale from 1 to 4 instances automatically
-- Application Load Balancer distributes traffic
-
-### Security
-- Private subnets for database tier
-- Security groups with least privilege access
-- IAM roles for secure AWS service access
-- Parameter Store for secrets management
-- TLS configurable for DocumentDB
-
-### Automation
-- Fully automated infrastructure deployment
-- User data script for application bootstrapping
-- Zero-touch EC2 instance configuration
-- Automatic application updates via Git
-
-### Monitoring
-- ALB health checks on `/health` endpoint
-- CloudWatch metrics for auto-scaling decisions
-- SNS integration for notifications
-
-## 🎯 Best Practices
-
-### Infrastructure as Code
-✅ Modular design for reusability  
-✅ Environment separation (dev, staging, prod)  
-✅ Variable-driven configuration  
-✅ State management with proper backends  
-✅ Resource naming conventions  
-
-### Security
-✅ Private subnets for sensitive resources  
-✅ Security groups with specific rules  
-✅ IAM roles with minimum required permissions  
-✅ Secrets stored in Parameter Store  
-✅ No hardcoded credentials in code  
-
-### High Availability
-✅ Multi-AZ deployment  
-✅ Auto-scaling for resilience  
-✅ Load balancer health checks  
-✅ Database cluster with replicas  
-
-### DevOps
-✅ Automated deployments  
-✅ Version control integration  
-✅ Declarative infrastructure  
-✅ Idempotent operations  
-
-## 💰 Cost Optimization
-
-To minimize costs while testing:
-
-1. **Use Smaller Instance Types**
-   ```hcl
-   instance_type = "t3.micro"  # Instead of t3.medium
-   ```
-
-2. **Reduce Auto Scaling Capacity**
-   ```hcl
-   desired_capacity = 1
-   min_size        = 1
-   max_size        = 2
-   ```
-
-3. **Use Spot Instances** (for non-production)
-   ```hcl
-   instance_market_options {
-     market_type = "spot"
-   }
-   ```
-
-4. **Destroy Resources When Not in Use**
-   ```bash
-   terraform destroy
-   ```
-
-## 🔒 Security Considerations
-
-### Current Implementation
-- Security groups restrict traffic by port
-- IAM roles for EC2 service access
-- Private subnets for database isolation
-- Parameter Store for configuration
-
-### Production Recommendations
-- [ ] Enable TLS for DocumentDB
-- [ ] Use AWS Secrets Manager for credentials
-- [ ] Implement VPC Flow Logs
-- [ ] Add WAF rules for ALB
-- [ ] Enable AWS Config for compliance
-- [ ] Use private key pairs for SSH (not open to 0.0.0.0/0)
-- [ ] Implement least privilege security group rules
-- [ ] Enable MFA for AWS account
-- [ ] Use HTTPS with SSL/TLS certificates
-- [ ] Implement network ACLs
-- [ ] Enable AWS GuardDuty for threat detection
-
-## 📊 Monitoring & Maintenance
-
-### CloudWatch Metrics
-- EC2 CPU Utilization (triggers auto-scaling)
-- ALB Request Count
-- Target Health Status
-- DocumentDB Connections
-
-### Health Checks
-- ALB performs health checks on `/health` endpoint
-- Unhealthy instances are automatically replaced
-
-### Logging
-Recommended additions:
-- Enable VPC Flow Logs
-- CloudWatch Logs for application logs
-- ALB access logs to S3
-- DocumentDB audit logs
-
-## 🚀 Future Enhancements
-
-- [ ] Add HTTPS/SSL certificate via ACM
-- [ ] Implement CI/CD pipeline (Jenkins/GitHub Actions)
-- [ ] Add CloudWatch dashboards
-- [ ] Implement automated backups for DocumentDB
-- [ ] Add Route53 for DNS management
-- [ ] Implement CloudFront CDN
-- [ ] Add S3 bucket for static assets
-- [ ] Implement AWS ElastiCache for caching
-- [ ] Add AWS RDS as alternative database
-- [ ] Implement multi-region deployment
-- [ ] Add Terraform remote backend (S3 + DynamoDB)
-- [ ] Implement blue-green deployments
-- [ ] Add container orchestration (ECS/EKS)
-- [ ] Implement AWS Lambda for serverless functions
-
-## 📝 Key Learnings & Skills Demonstrated
-
-### Cloud Architecture
-- Designed multi-tier architecture with proper network isolation
-- Implemented high availability and fault tolerance
-- Optimized for scalability and performance
-
-### Infrastructure as Code
-- Created reusable, modular Terraform code
-- Managed infrastructure state and dependencies
-- Implemented declarative infrastructure provisioning
-
-### DevOps Practices
-- Automated deployment pipelines
-- Configuration management
-- Infrastructure versioning and change management
-
-### AWS Expertise
-- Deep understanding of core AWS services
-- Security best practices
-- Cost optimization strategies
-- Service integration and orchestration
-
-### Problem Solving
-- Architected solutions for real-world scenarios
-- Balanced security, performance, and cost
-- Implemented production-ready configurations
+# Destroy only DocumentDB
+terraform destroy -target=aws_docdb_cluster.docdb_cluster
+```
 
 ---
 
-## 📞 Contact & Support
+## 📚 Additional Resources
 
-For questions, issues, or contributions, please open an issue in the repository.
+### Terraform Documentation
+- [Terraform AWS Provider](https://registry.terraform.io/providers/hashicorp/aws/latest/docs)
+- [Terraform Best Practices](https://www.terraform.io/docs/cloud/guides/recommended-practices/index.html)
 
-## 📄 License
+### AWS Documentation
+- [VPC Design](https://docs.aws.amazon.com/vpc/latest/userguide/what-is-amazon-vpc.html)
+- [Auto Scaling](https://docs.aws.amazon.com/autoscaling/ec2/userguide/what-is-amazon-ec2-auto-scaling.html)
+- [DocumentDB](https://docs.aws.amazon.com/documentdb/latest/developerguide/what-is.html)
+- [CodePipeline](https://docs.aws.amazon.com/codepipeline/latest/userguide/welcome.html)
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+### Useful Commands
+
+```bash
+# Validate configuration
+terraform validate
+
+# Format code
+terraform fmt
+
+# Show resource graph
+terraform graph | dot -Tsvg > graph.svg
+
+# List all resources
+terraform state list
+
+# Show specific resource
+terraform state show aws_vpc.main
+
+# Import existing resource
+terraform import aws_vpc.main vpc-0123456789abcdef0
+```
 
 ---
 
-**Built with ❤️ using Terraform and AWS**
+## 🎓 Learning Outcomes
 
-*This project demonstrates enterprise-level cloud infrastructure deployment skills suitable for DevOps Engineer, Cloud Engineer, and Infrastructure Engineer roles.*
+By studying this Terraform configuration, you'll learn:
+
+✅ VPC design with public/private subnet architecture  
+✅ Auto Scaling Group configuration with target tracking  
+✅ Application Load Balancer setup with health checks  
+✅ Managed database provisioning (DocumentDB)  
+✅ Complete CI/CD pipeline infrastructure  
+✅ IAM roles and policies for AWS services  
+✅ Security group management  
+✅ Secrets management with SSM Parameter Store  
+✅ Terraform best practices and organization  
+✅ Infrastructure dependencies and resource ordering  
+
+---
+
+## 📞 Support
+
+For issues or questions:
+
+1. **Check logs**: CloudWatch Logs for application/deployment logs
+2. **Review documentation**: AWS and Terraform docs
+3. **Terraform plan**: Always review before applying
+4. **State backup**: Keep backups of terraform.tfstate
+
+---
+
+<div align="center">
+
+**🚀 Infrastructure as Code Excellence with Terraform 🚀**
+
+[⬆ Back to Top](#️-finvault-infrastructure---terraform)
+
+</div>

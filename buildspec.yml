@@ -23,7 +23,7 @@ phases:
 
   post_build:
     commands:
-      - echo "Build and deployment completed successfully at `date`"
+      - echo "Build and deployment completed successfully
 
 
 artifacts:

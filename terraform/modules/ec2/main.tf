@@ -5,9 +5,6 @@ resource "aws_security_group" "ec2_sg" {
   description = "Allow TLS inbound traffic and all outbound traffic"
   vpc_id      = var.vpc_id
 
-  tags = {
-    Name = "allow_tls"
-  }
 }
 
 resource "aws_vpc_security_group_ingress_rule" "http" {
@@ -17,15 +14,6 @@ resource "aws_vpc_security_group_ingress_rule" "http" {
   to_port           = 80
   from_port = 80
   description = "allow http"
-}
-
-resource "aws_vpc_security_group_ingress_rule" "ssh" {
-  security_group_id = aws_security_group.ec2_sg.id
-  cidr_ipv4 = "0.0.0.0/0"
-  ip_protocol = "tcp"
-  to_port = 22
-  from_port = 22
-  description = "allow ssh"
 }
 
 
@@ -46,15 +34,16 @@ resource "aws_launch_template" "api_instance_template" {
 
   iam_instance_profile {
     name = aws_iam_instance_profile.api_instance_profile.name
+    
   }
   
+  network_interfaces {
+    security_groups = [aws_security_group.ec2_sg.id]
+  }
   
   instance_type = "t3.medium"
 
-  user_data = base64encode(templatefile("${path.module}/user_data.sh", {
-    mongo_url = "mongodb://${var.mongo_username}:${var.mongo_password}@${var.mongo_endpoint}/?replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false&authMechanism=SCRAM-SHA-1",
-    jwt_secret = "omar"
-  }))
+  user_data = base64encode(file("${path.module}/user_data.sh"))
 
 }
 
@@ -89,7 +78,7 @@ resource "aws_lb" "load_balancer" {
   name               = "web-lb"
   load_balancer_type = "application"
   security_groups    = [aws_security_group.ec2_sg.id]
-  subnets            = var.lb_subnet_id
+  subnets            = var.lb_subnet_ids
 }
 
 

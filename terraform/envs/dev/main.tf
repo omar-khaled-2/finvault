@@ -3,14 +3,17 @@ module "vpc" {
 
 }
 
+resource "random_string" "jwt_secret" {
+  length           = 20
+  special          = true
+}
 module "ec2" {
   source = "../../modules/ec2"
   vpc_id = module.vpc.vpc_id
-  ec2_subnet_ids = module.vpc.public_subnet_ids
-  lb_subnet_id = module.vpc.public_subnet_ids
-  mongo_endpoint =  "module.documentDB.endpoint"
-  mongo_username = "module.documentDB.username"
-  mongo_password = "module.documentDB.password"
+  ec2_subnet_ids = module.vpc.private_subnet_ids
+  lb_subnet_ids = module.vpc.public_subnet_ids
+  jwt_secret = random_string.jwt_secret.result
+
 }
 
 
@@ -24,8 +27,8 @@ module "s3" {
   source = "../../modules/s3"
 }
 
-module "ci_cd" {
-  source = "../../modules/ci-cd"
+module "codepipeline" {
+  source = "../../modules/codepipeline"
   artifacts_bucket_name = module.s3.artifacts_bucket_name
   autoscaling_group_name = module.ec2.autoscaling_group_name
 }
