@@ -62,7 +62,7 @@ resource "aws_autoscaling_group" "autoscaling_group" {
   desired_capacity           = 2
   min_size                   = 1
   max_size                   = 4
-  vpc_zone_identifier        = var.public_subnet_ids
+  vpc_zone_identifier        = var.ec2_subnet_ids
 
   launch_template {
     id      = aws_launch_template.api_instance_template.id
@@ -89,7 +89,7 @@ resource "aws_lb" "load_balancer" {
   name               = "web-lb"
   load_balancer_type = "application"
   security_groups    = [aws_security_group.ec2_sg.id]
-  subnets            = var.public_subnet_ids
+  subnets            = var.lb_subnet_id
 }
 
 
@@ -148,6 +148,11 @@ resource "aws_iam_role" "api_instance_role" {
 resource "aws_iam_role_policy_attachment" "ssm_access" {
   role       = aws_iam_role.api_instance_role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMReadOnlyAccess"
+}
+
+resource "aws_iam_role_policy_attachment" "s3_read_access" {
+  role       = aws_iam_role.api_instance_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess"
 }
 
 
