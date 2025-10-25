@@ -1,3 +1,4 @@
 #!/bin/bash
+
 cd /home/ec2-user/app/app
-npm run start:prod
+pm2 start npm --name app -- run start:prod
