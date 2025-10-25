@@ -1,4 +1,4 @@
 #!/bin/bash
-
-# Stop and remove the PM2 process
+cd /home/ec2-user/app/app
 pm2 stop app || echo "App not running"
+rm -f .env
