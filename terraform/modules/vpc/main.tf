@@ -20,7 +20,7 @@ resource "aws_subnet" "public" {
   vpc_id                  = aws_vpc.main.id
   cidr_block              = cidrsubnet(aws_vpc.main.cidr_block, 8, count.index)
   availability_zone       = data.aws_availability_zones.available.names[count.index]
-
+  map_public_ip_on_launch = true
 }
 
 
@@ -47,7 +47,7 @@ resource "aws_route" "public_internet" {
 }
 resource "aws_eip" "nat" {
   domain = "vpc"
-
+  depends_on = [aws_internet_gateway.internet_gateway]
 }
 
 resource "aws_route_table_association" "public_assoc" {

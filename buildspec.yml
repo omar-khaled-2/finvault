@@ -30,4 +30,6 @@ artifacts:
   files:
     - appspec.yml         # ✅ include appspec.yml
     - app/dist/**/*           # ✅ include built files
+    - app/package.json
+    - app/node_modules/**/*
     - scripts/**/*        # ✅ include deployment scripts
