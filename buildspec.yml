@@ -28,5 +28,5 @@ phases:
 
 artifacts:
   files:
-    - appspec.yml 
-    - dist/**/*           
+    - appspec.yml         # ✅ include appspec.yml
+    - app/dist/**/*           # ✅ include built files
