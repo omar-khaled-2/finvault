@@ -707,18 +707,10 @@ This project demonstrates comprehensive knowledge in:
 
 ### Author
 
-**Omar Khaled**
+**Omar Elsetouy**
 
 A passionate Cloud DevOps Engineer and Backend Developer specializing in AWS, Terraform, and Node.js. This project showcases comprehensive expertise in building production-ready, cloud-native applications with enterprise-grade infrastructure.
 
-### Connect
-
-- 💼 LinkedIn: [Your LinkedIn]
-- 🐙 GitHub: [omar-khaled-2](https://github.com/omar-khaled-2)
-- 📧 Email: [Your Email]
-- 🌐 Portfolio: [Your Portfolio]
-
----
 
 ## 📄 License
 

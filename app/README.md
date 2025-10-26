@@ -572,33 +572,4 @@ This project demonstrates proficiency in:
 
 ---
 
-## 📄 License
 
-This project is licensed under the UNLICENSED license.
-
----
-
-## 👨‍💻 Author
-
-**Your Name**
-
-A passionate backend developer specializing in Node.js, TypeScript, and cloud-based solutions. This project showcases expertise in building secure, scalable, and production-ready applications using modern technologies and best practices.
-
----
-
-## 🙏 Acknowledgments
-
-- NestJS team for the amazing framework
-- MongoDB for the robust database solution
-- AWS for reliable cloud services
-- The open-source community for excellent tools and libraries
-
----
-
-<div align="center">
-
-**Built with ❤️ using NestJS and TypeScript**
-
-[⬆ Back to Top](#-money-transfer-system)
-
-</div>
